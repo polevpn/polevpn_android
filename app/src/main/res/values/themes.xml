@@ -1,0 +1,33 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.MyApplication" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+
+    </style>
+
+    <style name="Theme.MyApplication.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
+
+    <style name="PopupOverlay">
+        <item name="overlapAnchor">false</item>
+        <item name="android:dropDownWidth">wrap_content</item>
+        <item name="android:colorBackground">@color/white</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="ToolbarStyle" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="popupTheme">@style/PopupOverlay</item>
+        <item name="theme">@style/ToolbarTheme</item>
+    </style>
+
+    <!--设置按钮颜色-->
+    <style name="ToolbarTheme">
+        <item name="colorControlNormal">@color/white</item>
+    </style>
+
+</resources>

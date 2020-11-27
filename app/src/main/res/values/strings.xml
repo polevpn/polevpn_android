@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">PoleVPN</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">PoleVPN</string>
+    <string name="nav_header_subtitle">polevpn@gmail.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">PoleVPN</string>
+    <string name="menu_gallery">常见问题</string>
+    <string name="menu_slideshow">关于我们</string>
+</resources>
