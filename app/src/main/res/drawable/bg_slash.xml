@@ -5,10 +5,9 @@
             <solid android:color="#FFFFFFFF"/>
         </shape>
     </item>
-    <item
-        android:top="140dp">
+    <item android:top="140dp">
         <bitmap
-            android:gravity="bottom|center_horizontal"
+            android:gravity="bottom|fill_horizontal"
             android:src="@drawable/startcover"/>
     </item>
 </layer-list>

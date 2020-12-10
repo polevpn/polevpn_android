@@ -34,8 +34,11 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.orhanobut.logger.Logger;
+import com.polevpn.application.App;
 import com.polevpn.application.MainActivity;
 import com.polevpn.application.R;
+import com.polevpn.application.data.Node;
 import com.polevpn.application.services.PoleVPNManager;
 import com.polevpn.application.services.PoleVPNService;
 import com.polevpn.application.tools.SharePref;
@@ -77,12 +80,25 @@ public class HomeFragment extends Fragment {
     public Handler handler = new Handler(Looper.getMainLooper()){
         @Override
         public void handleMessage(Message msg) {
-            boolean speed_up_mode =  msg.getData().getBoolean("speed_up_mode");
-            if(speed_up_mode){
-                textMode.setText("加速模式：全局加速");
-            }else{
-                textMode.setText("加速模式：智能分流");
+            String type =  msg.getData().getString("type");
+            switch (type){
+            case "speed_setting":
+                {
+                    boolean speed_up_mode =  msg.getData().getBoolean("speed_up_mode");
+                    if(speed_up_mode){
+                        textMode.setText("加速模式：全局加速");
+                    }else{
+                        textMode.setText("加速模式：智能分流");
+                    }
+                    break;
+                }
+            case "load_all_nodes":
+                {
+                    parserAllNodes();
+                    break;
+                }
             }
+
         }
     };
 
@@ -98,7 +114,6 @@ public class HomeFragment extends Fragment {
         animConnecting = AnimationUtils.loadAnimation(getContext(), R.anim.rotaterepeat);
         animConnecting.setInterpolator(new LinearInterpolator());
 
-        Polevpnmobile.setLogLevel("INFO");
         polevpn = PoleVPNManager.getInstance().getPoleVPN();
         polevpn.setEventHandler(poleVPNEventHandler);
 
@@ -171,7 +186,8 @@ public class HomeFragment extends Fragment {
 
         myVpnService = new PoleVPNService();
 
-        loadAllNodes();
+        Node.loadAllNodes(false);
+        parserAllNodes();
 
         return root;
     }
@@ -181,7 +197,7 @@ public class HomeFragment extends Fragment {
         public void onAllocEvent(String ip, String dns) {
 
             try {
-                Log.i("vpn", "vpn server allocated ip="+ip + ",dns=" + dns);
+                Logger.i( "vpn server allocated ip="+ip + ",dns=" + dns);
                 HomeFragment.this.dns = dns;
                 HomeFragment.this.ip = ip;
                 new Handler(Looper.getMainLooper()).post(()->{
@@ -193,7 +209,7 @@ public class HomeFragment extends Fragment {
                     }
                 });
             }catch (Throwable e){
-                e.printStackTrace();
+                Logger.e(e,e.getMessage());
             }
         }
 
@@ -201,8 +217,8 @@ public class HomeFragment extends Fragment {
         public void onErrorEvent(String type, String msg) {
 
             if(type.equals("login")){
-                Log.e("vpn","user or password invalid");
-                Toast("user or password invalid");
+                Log.e("vpn","token invalid");
+                Toast("token invalid,please login again");
             }else{
                 Toast("vpn error,"+msg);
                 Log.e("vpn",msg);
@@ -211,21 +227,21 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void onReconnectedEvent() {
-            Log.i("vpn","vpn reconnected");
+            Logger.i("vpn reconnected");
             Toast("vpn reconnected");
         }
 
         @Override
         public void onReconnectingEvent() {
-            polevpn.setLocalIP(Utils.getIPAddress());
-            Log.i("vpn","vpn reconnecting");
+            Logger.i("vpn reconnecting");
             Toast("vpn reconnecting");
+            polevpn.setLocalIP(Utils.getIPAddress());
         }
 
         @Override
         public void onStartedEvent() {
 
-            Log.i("vpn","vpn server connected");
+            Logger.i("vpn server connected");
             new Handler(Looper.getMainLooper()).post(()->{
                 PoleVPNManager.getInstance().registerNetworkCallback();
             });
@@ -234,15 +250,15 @@ public class HomeFragment extends Fragment {
         @Override
         public void onStoppedEvent() {
             try{
-                Log.i("vpn","vpn stopped");
+                Logger.i("vpn stopped");
                 new Handler(Looper.getMainLooper()).post(()->{
+                    myVpnService.stop();
                     btnConnect.setImageResource(R.drawable.connect);
                     textStatus.setVisibility(TextView.INVISIBLE);
-                    imgConnecting.setVisibility(ImageView.INVISIBLE);
                     imgConnecting.clearAnimation();
+                    imgConnecting.setVisibility(ImageView.INVISIBLE);
                     animConnecting.cancel();
                     PoleVPNManager.getInstance().unregisterNetworkCallback();
-                    myVpnService.stop();
                 });
 
                 if(changeNode){
@@ -250,53 +266,45 @@ public class HomeFragment extends Fragment {
                     changeNode = false;
                 }
             }catch (Throwable e){
-                e.printStackTrace();
+                Logger.e(e,e.getMessage());
             }
         }
     };
 
 
-    private void loadAllNodes(){
+    private void parserAllNodes(){
 
-        String header = "{\"X-Token\":\""+SharePref.getInstance().getString("token")+"\"}";
+        String allNodes = SharePref.getInstance().getString("all_nodes");
+        if(allNodes.equals("")){
+            return;
+        }
 
-        Polevpnmobile.api("/api/node/all",header,"",(ret,msg,resp)->{
+        try{
 
-            if(ret!= Polevpnmobile.HTTP_OK){
-                if(ret == Polevpnmobile.HTTP_ERROR_NETWORK){
-                    Toast("加载线路数据失败");
-                    Log.e("vpn",msg);
-                    return;
-                }
-                Toast(msg);
-                return;
+            JSONObject obj = new JSONObject(allNodes);
+
+            JSONArray result = obj.getJSONArray("free");
+
+            nodeList.clear();
+
+            for(int i=0;i<result.length();i++){
+                Map<String,Object> item = new HashMap();
+                item.put("image", R.drawable.logo);
+                item.put("title", result.getJSONObject(i).get("RegionZh"));
+                item.put("info",result.getJSONObject(i));
+                nodeList.add(item);
             }
 
-            try{
-
-                JSONObject obj = new JSONObject(resp);
-
-                JSONArray result = obj.getJSONArray("free");
-
-                for(int i=0;i<result.length();i++){
-                    Map<String,Object> item = new HashMap();
-                    item.put("image", R.drawable.logo);
-                    item.put("title", result.getJSONObject(i).get("RegionZh"));
-                    item.put("info",result.getJSONObject(i));
-                    nodeList.add(item);
+            new Handler(Looper.getMainLooper()).post(()->{
+                if (currentEndpointIndex < nodeList.size()){
+                    btnSelect.setText("当前线路 ("+nodeList.get(currentEndpointIndex).get("title")+")");
                 }
+            });
 
-                new Handler(Looper.getMainLooper()).post(()->{
-                    if (currentEndpointIndex < nodeList.size()){
-                        btnSelect.setText("当前线路 ("+nodeList.get(currentEndpointIndex).get("title")+")");
-                    }
-                });
+        }catch (JSONException e){
+            Logger.e(e,e.getMessage());
+        }
 
-            }catch (JSONException e){
-                e.printStackTrace();
-                Toast(e.getMessage());
-            }
-        });
     }
 
     private String getEndpoint() {
@@ -314,7 +322,7 @@ public class HomeFragment extends Fragment {
             }
 
         }catch (JSONException e){
-            e.printStackTrace();
+            Logger.e(e,e.getMessage());
             return "";
         }
         return "";
@@ -340,8 +348,7 @@ public class HomeFragment extends Fragment {
         String endpoint = getEndpoint();
 
         String email = SharePref.getInstance().getString("email");
-        String pwd = SharePref.getInstance().getString("password");
-
+        String pwd = SharePref.getInstance().getString("token");
         polevpn.setLocalIP(ip);
         polevpn.setRouteMode(SharePref.getInstance().getBoolean("speed_up_mode"));
         polevpn.start(endpoint,email,pwd,"www.apple.com");
@@ -353,23 +360,23 @@ public class HomeFragment extends Fragment {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
-            Intent intentStart = new Intent(getContext(), PoleVPNService.class);
-            getContext().startService(intentStart);
-            myVpnService.start(ip,dns,getContext().getPackageName());
-            polevpn.attach(myVpnService.getInterface().getFd());
             new Handler(Looper.getMainLooper()).post(()->{
+                Intent intentStart = new Intent(getContext(), PoleVPNService.class);
+                getContext().startService(intentStart);
+                myVpnService.start(ip,dns,getContext().getPackageName());
+                int fd = myVpnService.getInterface().detachFd();
+                polevpn.attach(fd);
                 btnConnect.setImageResource(R.drawable.connected);
                 imgConnecting.setVisibility(ImageView.INVISIBLE);
                 imgConnecting.clearAnimation();
                 animConnecting.cancel();
                 textStatus.setVisibility(TextView.VISIBLE);
             });
-            Log.i("vpn","vpn started successful");
+            Logger.i("vpn started successful");
 
         }else{
-            Log.i("vpn","user authorize failed");
+            Logger.i("user authorize failed");
             Toast("user authorize failed");
             stopVPN();
         }
@@ -377,7 +384,7 @@ public class HomeFragment extends Fragment {
 
     private void Toast(String msg){
         new Handler(Looper.getMainLooper()).post(()->{
-            Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+            Toast.makeText(App.getAppContext(), msg, Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -399,6 +406,7 @@ public class HomeFragment extends Fragment {
                 }else if(polevpn.getState() == Polevpnmobile.POLEVPN_MOBILE_STOPPED || polevpn.getState() == Polevpnmobile.POLEVPN_MOBILE_INIT){
                     currentEndpointIndex = i;
                     SharePref.getInstance().setInt("endpoint_index",i);
+                    Toast("正在连接到"+nodeList.get(i).get("title").toString()+"线路");
                     startVPN();
                     changeNode = false;
                 }

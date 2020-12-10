@@ -16,7 +16,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.orhanobut.logger.Logger;
 import com.polevpn.application.tools.SharePref;
+import com.polevpn.application.tools.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,6 +36,8 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        App.requestPermission(this);
+
         setContentView(R.layout.activity_login);
         emailText = findViewById(R.id.editEmail);
         pwdText = findViewById(R.id.editPassword);
@@ -41,7 +45,6 @@ public class LoginActivity extends AppCompatActivity {
         loginAction = findViewById(R.id.login_action);
         btn_login = (ImageView)findViewById(R.id.btn_login);
         loginFlag = true;
-
         emailText.setText(SharePref.getInstance().getString("email"));
 
         btn_login.setOnClickListener(new View.OnClickListener() {
@@ -100,13 +103,25 @@ public class LoginActivity extends AppCompatActivity {
             req.put("Email",email);
             req.put("Password",password);
         }catch (JSONException e){
-            e.printStackTrace();
+            Logger.e(e,e.getMessage());
         }
 
-        Polevpnmobile.api("/api/user/register","",req.toString(), (long ret, String msg, String resp) ->{
+        String apiHost =  SharePref.getInstance().getString("api_host");
+
+        if(apiHost.equals("")){
+            App.getSystemConfig();
+            apiHost =  SharePref.getInstance().getString("api_host");
+        }
+
+        String header = "{\"X-User-Agent\":\""+ Utils.getUserAgent() +"\"}";
+        Polevpnmobile.api(apiHost,"/api/user/register",header,req.toString(), (long ret, String msg, String resp) ->{
             if (ret != Polevpnmobile.HTTP_OK){
-                Toast(msg);
-                return;
+                if(ret == 1004){
+                    Toast(msg);
+                }else{
+                    Toast("Network Error");
+                    Logger.e(msg);
+                }
             }
             login(email,password);
         });
@@ -119,13 +134,26 @@ public class LoginActivity extends AppCompatActivity {
             req.put("Email",email);
             req.put("Password",password);
         }catch (JSONException e){
-            e.printStackTrace();
+            Logger.e(e,e.getMessage());
         }
 
-        Polevpnmobile.api("/api/user/login","",req.toString(), (long ret, String msg, String resp) ->{
+        String apiHost =  SharePref.getInstance().getString("api_host");
+
+        if(apiHost.equals("")){
+            App.getSystemConfig();
+            apiHost =  SharePref.getInstance().getString("api_host");
+        }
+
+        String header = "{\"X-User-Agent\":\""+ Utils.getUserAgent() +"\"}";
+        Polevpnmobile.api(apiHost,"/api/user/login",header,req.toString(), (long ret, String msg, String resp) ->{
 
             if (ret != Polevpnmobile.HTTP_OK){
-                Toast(msg);
+                if(ret == 1004){
+                    Toast(msg);
+                }else{
+                    Toast("Network Error");
+                    Logger.e(msg);
+                }
                 return;
             }
             String token = "";
@@ -135,8 +163,7 @@ public class LoginActivity extends AppCompatActivity {
                 token = obj.getString("Token");
                 uid = obj.getLong("Uid");
             }catch (JSONException e){
-                e.printStackTrace();
-                Toast(e.getMessage());
+                Logger.e(e,e.getMessage());
                 return;
             }
 

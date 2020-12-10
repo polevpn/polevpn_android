@@ -6,8 +6,11 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 
 import com.polevpn.application.App;
+import com.polevpn.application.BuildConfig;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -15,15 +18,13 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.security.MessageDigest;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.UUID;
 
 public class Utils {
     public static String getIPAddress() {
         Context context = App.getAppContext();
 
-        if (context == null){
-            return getIpAddressFromDevice();
-        }
         NetworkInfo info = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         if (info != null && info.isConnected()) {
             if (info.getType() == ConnectivityManager.TYPE_MOBILE) {//当前使用2G/3G/4G网络
@@ -37,7 +38,7 @@ public class Utils {
                 return ipAddress;
             }
         }else{
-            return getIpAddressFromDevice();
+            return "";
         }
         return "";
     }
@@ -103,5 +104,30 @@ public class Utils {
             r.append(String.format("%02X", new Integer(b & 0xFF)));
         }
         return r.toString();
+    }
+    public static String getScreen(){
+        DisplayMetrics dm = App.getAppContext().getResources().getDisplayMetrics();
+        return dm.widthPixels+"*"+dm.heightPixels;
+    }
+    public static String getUserAgent(){
+        String sysVersion = Build.VERSION.RELEASE;
+        String manufacturer = Build.MANUFACTURER;
+        String brand = Build.BRAND;
+        String model = Build.MODEL;
+        String display = getScreen();
+        String lang = Locale.getDefault().getLanguage();
+        String softVersion = BuildConfig.VERSION_NAME;
+        String deviceId = getDeviceID();
+        StringBuilder builder = new StringBuilder();
+        builder.append("Platform/").append("Android").append(" ");
+        builder.append("SysVersion/").append(sysVersion).append(" ");
+        builder.append("MFC/").append(manufacturer).append(" ");
+        builder.append("Brand/").append(brand).append(" ");
+        builder.append("Model/").append(model).append(" ");
+        builder.append("Display/").append(display).append(" ");
+        builder.append("Lang/").append(lang).append(" ");
+        builder.append("SoftVersion/").append(softVersion).append(" ");
+        builder.append("DeviceId/").append(deviceId);
+        return builder.toString();
     }
 }

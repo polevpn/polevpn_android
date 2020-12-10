@@ -39,6 +39,7 @@ public class PoleVPNService extends VpnService {
     public void onCreate() {
         super.onCreate();
         PoleVPNManager.getInstance().setService(this);
+
     }
 
     @Override
@@ -49,8 +50,10 @@ public class PoleVPNService extends VpnService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        int  ret = super.onStartCommand(intent, flags, startId);
+        PoleVPNManager.getInstance().setService(this);
         showNotification();
-        return super.onStartCommand(intent, flags, startId);
+        return  ret;
     }
 
     public void showNotification(){
@@ -70,7 +73,9 @@ public class PoleVPNService extends VpnService {
                 .setShowWhen(false)
                 .setPriority(Notification.PRIORITY_DEFAULT) //设置该通知优先级
                 .setOngoing(true)//true，设置他为一个正在进行的通知。他们通常是用来表示一个后台任务
+                .setOnlyAlertOnce(true)
                 .setSmallIcon(R.drawable.btn_polevpn);//设置通知小ICON
+
         if (service!= null){
             service.startForeground(NOTIFICATION_ID, notifyBuilder.build());
         }
@@ -81,8 +86,7 @@ public class PoleVPNService extends VpnService {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String channelName = "PoleVPN Service";
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel notificationChannel = new NotificationChannel(notificationChannelId, channelName, importance);
+            NotificationChannel notificationChannel = new NotificationChannel(notificationChannelId, channelName, NotificationManager.IMPORTANCE_NONE);
             notificationChannel.setDescription("Channel description");
             if (notifyManager != null) {
                 notifyManager.createNotificationChannel(notificationChannel);

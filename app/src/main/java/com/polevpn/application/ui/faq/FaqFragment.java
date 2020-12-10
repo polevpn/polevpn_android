@@ -1,9 +1,11 @@
 package com.polevpn.application.ui.faq;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,20 +18,13 @@ import com.polevpn.application.R;
 
 public class FaqFragment extends Fragment {
 
-    private FaqViewModel galleryViewModel;
+    private WebView  webView;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        galleryViewModel =
-                new ViewModelProvider(this).get(FaqViewModel.class);
         View root = inflater.inflate(R.layout.fragment_faq, container, false);
-        final TextView textView = root.findViewById(R.id.text_gallery);
-        galleryViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
-        });
+        webView  = (WebView) root.findViewById(R.id.faq_web_view);
+        webView.loadUrl("file:android_asset/faq.html");
         return root;
     }
 }
