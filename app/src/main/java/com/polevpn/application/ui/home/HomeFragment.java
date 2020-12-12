@@ -351,7 +351,7 @@ public class HomeFragment extends Fragment {
         String pwd = SharePref.getInstance().getString("token");
         polevpn.setLocalIP(ip);
         polevpn.setRouteMode(SharePref.getInstance().getBoolean("speed_up_mode"));
-        polevpn.start(endpoint,email,pwd,"www.apple.com");
+        polevpn.start(endpoint,email,pwd);
 
     }
 

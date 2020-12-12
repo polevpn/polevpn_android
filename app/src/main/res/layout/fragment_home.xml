@@ -56,7 +56,6 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/btn_select"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/img_connecting"
         app:layout_constraintVertical_bias="0.0" />

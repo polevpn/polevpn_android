@@ -25,11 +25,11 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="350dp"
+            android:layout_height="250dp"
             android:layout_gravity="bottom"
             android:orientation="vertical">
             <ImageView
-                android:layout_marginTop="50dp"
+                android:layout_marginTop="30dp"
                 android:layout_width="fill_parent"
                 android:layout_height="2dp"
                 android:background="#eeeeee" />
@@ -44,13 +44,13 @@
             <TextView
                 android:id="@+id/text_email"
                 android:layout_width="wrap_content"
-                android:layout_height="20dp"
+                android:layout_height="30dp"
                 android:layout_gravity="center"
                 android:text="Email: " />
             <TextView
                 android:id="@+id/text_poleid"
                 android:layout_width="wrap_content"
-                android:layout_height="35dp"
+                android:layout_height="30dp"
                 android:layout_gravity="center"
                 android:text="PoleID: 0" />
 
@@ -60,17 +60,17 @@
                 android:background="#eeeeee" />
 
             <Switch
-                android:layout_marginTop="50dp"
+                android:layout_marginTop="10dp"
                 android:id="@+id/switch_global"
                 android:layout_width="wrap_content"
-                android:layout_height="35dp"
+                android:layout_height="30dp"
                 android:layout_gravity="center"
                 android:textStyle="bold"
                 android:textColor="#666666"
                 android:text="开启全局加速" />
             
             <TextView
-                android:layout_marginTop="50dp"
+                android:layout_marginTop="20dp"
                 android:layout_width="wrap_content"
                 android:layout_height="35dp"
                 android:textColor="#666666"
