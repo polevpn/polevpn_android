@@ -4,17 +4,10 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
@@ -54,6 +47,12 @@ public class PoleVPNService extends VpnService {
         PoleVPNManager.getInstance().setService(this);
         showNotification();
         return  ret;
+    }
+
+    @Override
+    public void onRevoke() {
+        super.onRevoke();
+        PoleVPNManager.getInstance().getPoleVPN().stop();
     }
 
     public void showNotification(){
