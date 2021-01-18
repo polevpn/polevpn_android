@@ -134,7 +134,7 @@ public class HomeFragment extends Fragment {
 
         }else{
             btnConnect.setImageResource(R.drawable.connect);
-            imgConnecting.setVisibility(ImageView.INVISIBLE);
+            imgConnecting.setVisibility(ImageView.VISIBLE);
             textStatus.setVisibility(TextView.INVISIBLE);
         }
 
@@ -201,7 +201,7 @@ public class HomeFragment extends Fragment {
                 HomeFragment.this.dns = dns;
                 HomeFragment.this.ip = ip;
                 new Handler(Looper.getMainLooper()).post(()->{
-                    Intent intent = VpnService.prepare(getContext());
+                    Intent intent = VpnService.prepare(App.getAppContext());
                     if (intent != null) {
                         startActivityForResult(intent, 0);
                     } else {
@@ -256,8 +256,6 @@ public class HomeFragment extends Fragment {
                     btnConnect.setImageResource(R.drawable.connect);
                     textStatus.setVisibility(TextView.INVISIBLE);
                     imgConnecting.clearAnimation();
-                    imgConnecting.setVisibility(ImageView.INVISIBLE);
-                    animConnecting.cancel();
                     PoleVPNManager.getInstance().unregisterNetworkCallback();
                 });
 
@@ -328,6 +326,27 @@ public class HomeFragment extends Fragment {
         return "";
     }
 
+    private String getEndpointSni() {
+
+        try{
+            JSONObject info = (JSONObject)nodeList.get(currentEndpointIndex).get("info");
+
+            int len = info.getJSONArray("Nodes").length();
+            Random random = new Random();
+            int index = random.nextInt(len);
+            for(int i=0;i<len;i++){
+                if(index == i){
+                    return info.getJSONArray("Nodes").getJSONObject(i).get("Sni").toString();
+                }
+            }
+
+        }catch (JSONException e){
+            Logger.e(e,e.getMessage());
+            return "";
+        }
+        return "";
+    }
+
     private void startVPN(){
         String ip = Utils.getIPAddress();
         if(ip == ""){
@@ -346,12 +365,13 @@ public class HomeFragment extends Fragment {
         });
 
         String endpoint = getEndpoint();
+        String sni = getEndpointSni();
 
         String email = SharePref.getInstance().getString("email");
         String pwd = SharePref.getInstance().getString("token");
         polevpn.setLocalIP(ip);
         polevpn.setRouteMode(SharePref.getInstance().getBoolean("speed_up_mode"));
-        polevpn.start(endpoint,email,pwd);
+        polevpn.start(endpoint,email,pwd,sni);
 
     }
 
@@ -362,16 +382,21 @@ public class HomeFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             new Handler(Looper.getMainLooper()).post(()->{
-                Intent intentStart = new Intent(getContext(), PoleVPNService.class);
-                getContext().startService(intentStart);
-                myVpnService.start(ip,dns,getContext().getPackageName());
-                int fd = myVpnService.getInterface().detachFd();
-                polevpn.attach(fd);
-                btnConnect.setImageResource(R.drawable.connected);
-                imgConnecting.setVisibility(ImageView.INVISIBLE);
-                imgConnecting.clearAnimation();
-                animConnecting.cancel();
-                textStatus.setVisibility(TextView.VISIBLE);
+                Intent intentStart = new Intent(App.getAppContext(), PoleVPNService.class);
+                App.getAppContext().startService(intentStart);
+                myVpnService.start(ip,dns,App.getAppContext().getPackageName());
+                if (myVpnService.getInterface()!= null){
+                    int fd = myVpnService.getInterface().detachFd();
+                    polevpn.attach(fd);
+                    btnConnect.setImageResource(R.drawable.connected);
+                    imgConnecting.setVisibility(ImageView.INVISIBLE);
+                    imgConnecting.clearAnimation();
+                    animConnecting.cancel();
+                    textStatus.setVisibility(TextView.VISIBLE);
+                }else{
+                    Logger.e("vpn started fail");
+                }
+
             });
             Logger.i("vpn started successful");
 
