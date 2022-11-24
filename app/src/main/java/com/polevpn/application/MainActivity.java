@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
         initWebView(webSettings);
         webView.addJavascriptInterface(this, "ext");
         webView.loadUrl("file:///android_asset/index.html");
-
         myVpnService = new PoleVPNService();
         polevpn = PoleVPNManager.getInstance().getPoleVPN();
         polevpn.setEventHandler(poleVPNEventHandler);
@@ -76,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
                     msg.put("data",data);
                     webView.loadUrl("javascript:onCallback("+msg.toString()+")");
                 }catch (Exception e){
+                    Polevpnmobile.log("error",e.getMessage());
                     e.printStackTrace();
                 }
             },1000);
@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
             Polevpnmobile.setLogPath(path);
 
         }catch (Exception e){
+            Polevpnmobile.log("error",e.getMessage());
             e.printStackTrace();
         }
     }
@@ -135,6 +136,9 @@ public class MainActivity extends AppCompatActivity {
             new Handler(Looper.getMainLooper()).post(()->{
                 Intent intentStart = new Intent(App.getAppContext(), PoleVPNService.class);
                 App.getAppContext().startService(intentStart);
+
+                Polevpnmobile.log("info","vpn set ip="+ip+",dns="+dns+",routes="+routes.toString());
+
                 myVpnService.start(ip,dns,routes,App.getAppContext().getPackageName());
                 if (myVpnService.getInterface()!= null){
                     int fd = myVpnService.getInterface().detachFd();
@@ -142,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
                 }else{
                     Log.e("main","vpn started fail");
                 }
-
+                Polevpnmobile.log("info","vpn started successful");
             });
             Log.i("main","vpn started successful");
 
@@ -158,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
         public void onAllocEvent(String ip, String dns,String routes) {
 
             try {
+                Polevpnmobile.log("info","vpn allocated ip="+ip + ",dns=" + dns+",routes="+routes);
                 Log.i("main", "vpn server allocated ip="+ip + ",dns=" + dns);
                 MainActivity.this.dns = dns;
                 MainActivity.this.ip = ip;
@@ -187,11 +192,13 @@ public class MainActivity extends AppCompatActivity {
 
                         webView.loadUrl("javascript:onCallback(" + msg.toString() + ")");
                     }catch (Exception e){
+                        Polevpnmobile.log("error",e.getMessage());
                         e.printStackTrace();
                     }
 
                 });
             }catch (Throwable e){
+                Polevpnmobile.log("error",e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -206,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
                     msg.put("data",new JSONObject().put("error",error));
                     webView.loadUrl("javascript:onCallback("+msg.toString()+")");
                 }catch (Exception e){
+                    Polevpnmobile.log("error",e.getMessage());
                     e.printStackTrace();
                 }
             });
@@ -214,12 +222,15 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReconnectedEvent() {
             Log.i("main","vpn reconnected");
+            Polevpnmobile.log("info","vpn reconnected");
+
             new Handler(Looper.getMainLooper()).post(()->{
                 try{
                     JSONObject msg = new JSONObject();
                     msg.put("event","reconnected");
                     webView.loadUrl("javascript:onCallback("+msg.toString()+")");
                 }catch (Exception e){
+                    Polevpnmobile.log("error",e.getMessage());
                     e.printStackTrace();
                 }
             });
@@ -228,12 +239,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReconnectingEvent() {
             Log.i("main","vpn reconnecting");
+            Polevpnmobile.log("info","vpn reconnecting");
             new Handler(Looper.getMainLooper()).post(()->{
                 try{
                     JSONObject msg = new JSONObject();
                     msg.put("event","reconnecting");
                     webView.loadUrl("javascript:onCallback("+msg.toString()+")");
                 }catch (Exception e){
+                    Polevpnmobile.log("error",e.getMessage());
                     e.printStackTrace();
                 }
             });
@@ -241,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onStartedEvent() {
-
+            Polevpnmobile.log("info","vpn connected");
             Log.i("main","vpn server connected");
             new Handler(Looper.getMainLooper()).post(()->{
                 PoleVPNManager.getInstance().registerNetworkCallback();
@@ -250,6 +263,7 @@ public class MainActivity extends AppCompatActivity {
                     msg.put("event","started");
                     webView.loadUrl("javascript:onCallback("+msg.toString()+")");
                 }catch (Exception e){
+                    Polevpnmobile.log("error",e.getMessage());
                     e.printStackTrace();
                 }
             });
@@ -259,6 +273,7 @@ public class MainActivity extends AppCompatActivity {
         public void onStoppedEvent() {
             try{
                 Log.i("main","vpn stopped");
+                Polevpnmobile.log("info","vpn stopped");
                 new Handler(Looper.getMainLooper()).post(()->{
                     if(PoleVPNManager.getInstance().getService() != null){
                         PoleVPNManager.getInstance().getService().stop();
@@ -269,11 +284,13 @@ public class MainActivity extends AppCompatActivity {
                         msg.put("event","stoped");
                         webView.loadUrl("javascript:onCallback("+msg.toString()+")");
                     }catch (Exception e){
+                        Polevpnmobile.log("error",e.getMessage());
                         e.printStackTrace();
                     }
                 });
             }catch (Throwable e){
-               e.printStackTrace();
+                Polevpnmobile.log("error",e.getMessage());
+                e.printStackTrace();
             }
         }
     };
@@ -295,6 +312,7 @@ public class MainActivity extends AppCompatActivity {
                 msg.put("data", data);
                 webView.loadUrl("javascript:onCallback(" + msg.toString() + ")");
             }catch (Exception e){
+                Polevpnmobile.log("error",e.getMessage());
                 e.printStackTrace();
             }
         });
@@ -315,6 +333,7 @@ public class MainActivity extends AppCompatActivity {
                 msg.put("data", data);
                 webView.loadUrl("javascript:onCallback(" + msg.toString() + ")");
             }catch (Exception e){
+                Polevpnmobile.log("error",e.getMessage());
                 e.printStackTrace();
             }
         });
@@ -361,6 +380,8 @@ public class MainActivity extends AppCompatActivity {
             boolean skipVerifySSL = obj.getBoolean("SkipVerifySSL");
             boolean useRemoteRouteRules =  obj.getBoolean("UseRemoteRouteRules");
 
+            Polevpnmobile.log("info","connect to"+" endpoint="+endpoint);
+
             MainActivity.this.routes = new ArrayList<>();
             if(!localRouteRules.isEmpty()){
                 String [] localRoutes = localRouteRules.split("\n");
@@ -382,6 +403,7 @@ public class MainActivity extends AppCompatActivity {
             polevpn.start(endpoint,user,password,sni,skipVerifySSL);
 
         }catch (Exception e){
+            Polevpnmobile.log("error",e.getMessage());
             e.printStackTrace();
         }
         return "{\"Msg\":\"ok\",\"Code\":0}";
