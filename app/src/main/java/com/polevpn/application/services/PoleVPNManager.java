@@ -8,8 +8,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-
-import com.orhanobut.logger.Logger;
 import com.polevpn.application.App;
 import com.polevpn.application.MainActivity;
 import com.polevpn.application.tools.Utils;
@@ -64,7 +62,7 @@ public class PoleVPNManager {
         registered = true;
         monitor.registerNetworkCallback(context,(state,network)->{
             String curLocalIp = Utils.getIPAddress();
-            Logger.i("network changed "+state);
+            Log.i("network","network changed "+state);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 if(state.equals("available") || state.equals("cap-changed") || state.equals("prop-changed")){

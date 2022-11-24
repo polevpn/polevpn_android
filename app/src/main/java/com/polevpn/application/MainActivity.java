@@ -21,7 +21,12 @@ import android.widget.Toast;
 import com.polevpn.application.services.PoleVPNManager;
 import com.polevpn.application.services.PoleVPNService;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import polevpnmobile.PoleVPN;
 import polevpnmobile.PoleVPNEventHandler;
@@ -36,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     private PoleVPN polevpn;
     private String dns;
     private String ip;
+    private boolean useRemoteRouteRules;
+    private List<String> routes = new LinkedList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
             new Handler(Looper.getMainLooper()).post(()->{
                 Intent intentStart = new Intent(App.getAppContext(), PoleVPNService.class);
                 App.getAppContext().startService(intentStart);
-                myVpnService.start(ip,dns,App.getAppContext().getPackageName());
+                myVpnService.start(ip,dns,routes,App.getAppContext().getPackageName());
                 if (myVpnService.getInterface()!= null){
                     int fd = myVpnService.getInterface().detachFd();
                     polevpn.attach(fd);
@@ -148,12 +155,19 @@ public class MainActivity extends AppCompatActivity {
 
     private PoleVPNEventHandler poleVPNEventHandler = new PoleVPNEventHandler() {
         @Override
-        public void onAllocEvent(String ip, String dns) {
+        public void onAllocEvent(String ip, String dns,String routes) {
 
             try {
                 Log.i("main", "vpn server allocated ip="+ip + ",dns=" + dns);
                 MainActivity.this.dns = dns;
                 MainActivity.this.ip = ip;
+
+                if(MainActivity.this.useRemoteRouteRules) {
+                    JSONArray ar = new JSONArray(routes);
+                    for(int i=0;i<ar.length();i++){
+                        MainActivity.this.routes.add(ar.getString(i));
+                    }
+                }
                 new Handler(Looper.getMainLooper()).post(()->{
                     Intent intent = VpnService.prepare(App.getAppContext());
                     if (intent != null) {
@@ -246,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
             try{
                 Log.i("main","vpn stopped");
                 new Handler(Looper.getMainLooper()).post(()->{
-                    myVpnService.stop();
+                    PoleVPNManager.getInstance().getService().stop();
                     PoleVPNManager.getInstance().unregisterNetworkCallback();
 
                     try{
@@ -342,8 +356,30 @@ public class MainActivity extends AppCompatActivity {
             String user = obj.getString("User");
             String password = obj.getString("Password");
             String sni = obj.getString("Sni");
+            String localRouteRules = obj.getString("LocalRouteRules");
+            String proxyDomains = obj.getString("ProxyDomains");
+            boolean skipVerifySSL = obj.getBoolean("SkipVerifySSL");
+            boolean useRemoteRouteRules =  obj.getBoolean("UseRemoteRouteRules");
 
-            polevpn.start(endpoint,user,password,sni);
+            MainActivity.this.routes = new ArrayList<>();
+            if(!localRouteRules.isEmpty()){
+                String [] localRoutes = localRouteRules.split("\n");
+                for(int i=0;i<localRoutes.length;i++){
+                    MainActivity.this.routes.add(localRoutes[i]);
+                }
+            }
+
+            if(!proxyDomains.isEmpty()){
+                String domains = Polevpnmobile.getRouteIpsFromDomain(proxyDomains);
+                String []localRoutes = domains.split("\n");
+                for(int i=0;i<localRoutes.length;i++){
+                    MainActivity.this.routes.add(localRoutes[i]);
+                }
+            }
+
+            MainActivity.this.useRemoteRouteRules = useRemoteRouteRules;
+
+            polevpn.start(endpoint,user,password,sni,skipVerifySSL);
 
         }catch (Exception e){
             e.printStackTrace();
