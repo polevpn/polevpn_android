@@ -260,9 +260,10 @@ public class MainActivity extends AppCompatActivity {
             try{
                 Log.i("main","vpn stopped");
                 new Handler(Looper.getMainLooper()).post(()->{
-                    PoleVPNManager.getInstance().getService().stop();
+                    if(PoleVPNManager.getInstance().getService() != null){
+                        PoleVPNManager.getInstance().getService().stop();
+                    }
                     PoleVPNManager.getInstance().unregisterNetworkCallback();
-
                     try{
                         JSONObject msg = new JSONObject();
                         msg.put("event","stoped");
@@ -270,7 +271,6 @@ public class MainActivity extends AppCompatActivity {
                     }catch (Exception e){
                         e.printStackTrace();
                     }
-
                 });
             }catch (Throwable e){
                e.printStackTrace();

@@ -61,21 +61,7 @@ public class PoleVPNManager {
 
         registered = true;
         monitor.registerNetworkCallback(context,(state,network)->{
-            String curLocalIp = Utils.getIPAddress();
             Log.i("network","network changed "+state);
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                if(state.equals("available") || state.equals("cap-changed") || state.equals("prop-changed")){
-                    if(getService()!= null){
-                        getService().setUnderlyingNetworks(new Network[]{network});
-                    }
-                }else{
-                    if(getService()!= null){
-                        getService().setUnderlyingNetworks(null);
-                    }
-                }
-
-            }
         });
     }
 
