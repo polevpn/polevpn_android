@@ -73,7 +73,7 @@ public class PoleVPNService extends VpnService {
                 .setPriority(Notification.PRIORITY_DEFAULT) //设置该通知优先级
                 .setOngoing(true)//true，设置他为一个正在进行的通知。他们通常是用来表示一个后台任务
                 .setOnlyAlertOnce(true)
-                .setSmallIcon(R.drawable.btn_polevpn);//设置通知小ICON
+                .setSmallIcon(R.drawable.ic_launcher_foreground);//设置通知小ICON
 
         if (service!= null){
             service.startForeground(NOTIFICATION_ID, notifyBuilder.build());

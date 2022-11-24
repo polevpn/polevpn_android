@@ -24,7 +24,6 @@ public class PoleVPNManager {
 
     private  PoleVPN polevpn = Polevpnmobile.newPoleVPN();
     private  Context context;
-    private  String localIP;
     private  boolean registered;
     private NetworkMonitor monitor = new NetworkMonitor();
     private static PoleVPNManager instance;
@@ -34,7 +33,6 @@ public class PoleVPNManager {
 
     private PoleVPNManager(){
         messageHandler = new HashMap<>();
-        localIP =  Utils.getIPAddress();
         context = App.getAppContext();
     }
 
@@ -66,7 +64,7 @@ public class PoleVPNManager {
         registered = true;
         monitor.registerNetworkCallback(context,(state,network)->{
             String curLocalIp = Utils.getIPAddress();
-            Logger.i("network changed "+state+",old IP="+localIP+",new IP="+curLocalIp);
+            Logger.i("network changed "+state);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 if(state.equals("available") || state.equals("cap-changed") || state.equals("prop-changed")){
@@ -80,12 +78,6 @@ public class PoleVPNManager {
                 }
 
             }
-            if(!curLocalIp.equals(localIP) && polevpn.getState() == Polevpnmobile.POLEVPN_MOBILE_STARTED){
-                Logger.i("network changed,refresh network");
-                polevpn.setLocalIP(curLocalIp);
-                polevpn.closeConnect(true);
-            }
-            localIP = curLocalIp;
         });
     }
 
