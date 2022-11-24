@@ -28,6 +28,8 @@ public class PoleVPNManager {
     private PoleVPNService service;
     private Map<String,Handler> messageHandler;
 
+    private AccessServer accessServer;
+
 
     private PoleVPNManager(){
         messageHandler = new HashMap<>();
@@ -73,6 +75,14 @@ public class PoleVPNManager {
 
         monitor.unregisterNetworkCallback(context);
         registered = false;
+    }
+
+    public AccessServer getAccessServer(){
+        return accessServer;
+    }
+
+    public void setAccessServer(AccessServer accessServer) {
+        this.accessServer = accessServer;
     }
 
     public void addMessageHandler(String type,Handler handler){

@@ -18,6 +18,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Toast;
 
+import com.polevpn.application.services.AccessServer;
 import com.polevpn.application.services.PoleVPNManager;
 import com.polevpn.application.services.PoleVPNService;
 
@@ -137,9 +138,14 @@ public class MainActivity extends AppCompatActivity {
                 Intent intentStart = new Intent(App.getAppContext(), PoleVPNService.class);
                 App.getAppContext().startService(intentStart);
 
-                Polevpnmobile.log("info","vpn set ip="+ip+",dns="+dns+",routes="+routes.toString());
+                List<String> allRoutes = new LinkedList<>();
 
-                myVpnService.start(ip,dns,routes,App.getAppContext().getPackageName());
+                allRoutes.addAll(PoleVPNManager.getInstance().getAccessServer().localRouteRules);
+                allRoutes.addAll(routes);
+
+                Polevpnmobile.log("info","vpn set ip="+ip+",dns="+dns+",routes="+allRoutes.toString());
+
+                myVpnService.start(ip,dns,allRoutes,App.getAppContext().getPackageName());
                 if (myVpnService.getInterface()!= null){
                     int fd = myVpnService.getInterface().detachFd();
                     polevpn.attach(fd);
@@ -163,11 +169,13 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 Polevpnmobile.log("info","vpn allocated ip="+ip + ",dns=" + dns+",routes="+routes);
-                Log.i("main", "vpn server allocated ip="+ip + ",dns=" + dns);
+                Log.i("main", "vpn allocated ip="+ip + ",dns=" + dns);
                 MainActivity.this.dns = dns;
                 MainActivity.this.ip = ip;
 
-                if(MainActivity.this.useRemoteRouteRules) {
+                MainActivity.this.routes = new LinkedList<>();
+
+                if(PoleVPNManager.getInstance().getAccessServer().useRemoteRouteRules) {
                     JSONArray ar = new JSONArray(routes);
                     for(int i=0;i<ar.length();i++){
                         MainActivity.this.routes.add(ar.getString(i));
@@ -371,22 +379,27 @@ public class MainActivity extends AppCompatActivity {
     public String ConnectAccessServer(String req) {
         try{
             JSONObject obj = new JSONObject(req);
-            String endpoint = obj.getString("Endpoint");
-            String user = obj.getString("User");
-            String password = obj.getString("Password");
-            String sni = obj.getString("Sni");
+
+            AccessServer accessServer = new AccessServer();
+
+            accessServer.endpoint = obj.getString("Endpoint");
+            accessServer.user = obj.getString("User");
+            accessServer.password = obj.getString("Password");
+            accessServer.sni = obj.getString("Sni");
             String localRouteRules = obj.getString("LocalRouteRules");
             String proxyDomains = obj.getString("ProxyDomains");
-            boolean skipVerifySSL = obj.getBoolean("SkipVerifySSL");
-            boolean useRemoteRouteRules =  obj.getBoolean("UseRemoteRouteRules");
+            accessServer.skipSSLVerify = obj.getBoolean("SkipVerifySSL");
+            accessServer.useRemoteRouteRules =  obj.getBoolean("UseRemoteRouteRules");
 
-            Polevpnmobile.log("info","connect to"+" endpoint="+endpoint);
+            Polevpnmobile.log("info","connect to"+" endpoint="+accessServer.endpoint);
 
-            MainActivity.this.routes = new ArrayList<>();
+            List<String> routes = new ArrayList<>();
+
             if(!localRouteRules.isEmpty()){
                 String [] localRoutes = localRouteRules.split("\n");
+                Log.i("main",localRouteRules);
                 for(int i=0;i<localRoutes.length;i++){
-                    MainActivity.this.routes.add(localRoutes[i]);
+                    routes.add(localRoutes[i]);
                 }
             }
 
@@ -394,13 +407,15 @@ public class MainActivity extends AppCompatActivity {
                 String domains = Polevpnmobile.getRouteIpsFromDomain(proxyDomains);
                 String []localRoutes = domains.split("\n");
                 for(int i=0;i<localRoutes.length;i++){
-                    MainActivity.this.routes.add(localRoutes[i]);
+                    routes.add(localRoutes[i]);
                 }
             }
 
-            MainActivity.this.useRemoteRouteRules = useRemoteRouteRules;
+            accessServer.localRouteRules = routes;
 
-            polevpn.start(endpoint,user,password,sni,skipVerifySSL);
+            PoleVPNManager.getInstance().setAccessServer(accessServer);
+
+            polevpn.start(accessServer.endpoint,accessServer.user,accessServer.password,accessServer.sni,accessServer.skipSSLVerify);
 
         }catch (Exception e){
             Polevpnmobile.log("error",e.getMessage());
