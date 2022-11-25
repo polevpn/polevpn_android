@@ -1,6 +1,7 @@
 package com.polevpn.application;
 import android.app.Application;
 import android.content.Context;
+
 import polevpnmobile.Polevpnmobile;
 
 
@@ -13,6 +14,7 @@ public class App extends Application {
         super.onCreate();
         context = getApplicationContext();
         Polevpnmobile.setLogLevel("INFO");
+
     }
 
     public static Context getAppContext() {
