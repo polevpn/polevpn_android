@@ -45,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean useRemoteRouteRules;
     private List<String> routes = new LinkedList<>();
 
+    private boolean isFront;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +83,18 @@ public class MainActivity extends AppCompatActivity {
                 }
             },1000);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        this.isFront = true;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        this.isFront = false;
     }
 
     private void initDbAndLog(){
@@ -232,6 +246,9 @@ public class MainActivity extends AppCompatActivity {
             Log.i("main","vpn reconnected");
             Polevpnmobile.log("info","vpn reconnected");
 
+            if(!MainActivity.this.isFront){
+                return;
+            }
             new Handler(Looper.getMainLooper()).post(()->{
                 try{
                     JSONObject msg = new JSONObject();
@@ -248,6 +265,9 @@ public class MainActivity extends AppCompatActivity {
         public void onReconnectingEvent() {
             Log.i("main","vpn reconnecting");
             Polevpnmobile.log("info","vpn reconnecting");
+            if(!MainActivity.this.isFront){
+                return;
+            }
             new Handler(Looper.getMainLooper()).post(()->{
                 try{
                     JSONObject msg = new JSONObject();
