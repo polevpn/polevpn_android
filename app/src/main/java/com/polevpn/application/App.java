@@ -13,8 +13,20 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         context = getApplicationContext();
-        Polevpnmobile.setLogLevel("INFO");
+        initDbAndLog();
 
+    }
+
+    private void initDbAndLog(){
+        try {
+            String path = getApplicationContext().getFilesDir().getAbsolutePath();
+            Polevpnmobile.initDB(path+"/config.db");
+            Polevpnmobile.setLogPath(path);
+            Polevpnmobile.setLogLevel("INFO");
+        }catch (Exception e){
+            Polevpnmobile.log("error",e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public static Context getAppContext() {

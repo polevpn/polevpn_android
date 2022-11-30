@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initWindow();
-        initDbAndLog();
 
         webView = (WebView) findViewById(R.id.webview);
         webView.setWebChromeClient(new WebChromeClient());
@@ -95,18 +94,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         this.isFront = false;
-    }
-
-    private void initDbAndLog(){
-        try {
-            String path = getApplicationContext().getFilesDir().getAbsolutePath();
-            Polevpnmobile.initDB(path+"/config.db");
-            Polevpnmobile.setLogPath(path);
-
-        }catch (Exception e){
-            Polevpnmobile.log("error",e.getMessage());
-            e.printStackTrace();
-        }
     }
 
     private void initWindow(){
