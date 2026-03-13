@@ -2,14 +2,21 @@ plugins {
     id 'com.android.application'
 }
 
+// Load signing properties from local.properties
+def localProps = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localProps.load(localPropertiesFile.newDataInputStream())
+}
+
 android {
     namespace 'com.polevpn.application'
     signingConfigs {
         release {
-        storeFile file('/Users/starjiang/android.keystore')
-            storePassword 'star@1984'
-            keyPassword 'star@1984'
-            keyAlias 'android.keystore'
+            storeFile localProps.getProperty('RELEASE_STORE_FILE') ? file(localProps.getProperty('RELEASE_STORE_FILE')) : null
+            storePassword localProps.getProperty('RELEASE_STORE_PASSWORD')
+            keyPassword localProps.getProperty('RELEASE_KEY_PASSWORD')
+            keyAlias localProps.getProperty('RELEASE_KEY_ALIAS')
         }
     }
     compileSdkVersion 34
