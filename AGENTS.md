@@ -188,21 +188,15 @@ The WebView exposes these native methods to JavaScript:
 ## Deployment Process
 
 ### Release Build Configuration
-- **Signing**: Configured in `app/build.gradle`
-  - Keystore path: `/Users/starjiang/android.keystore`
-  - Store/Key password: `star@1984`
-  - Key alias: `android.keystore`
+- **Signing**: Configured in `app/build.gradle` (local signing config)
 - **ProGuard**: Disabled (`minifyEnabled false`)
 - **Version**: Defined in `app/build.gradle`
   - `versionCode`: 1
   - `versionName`: "1.0"
 
-### Important Security Note
-⚠️ **The signing keystore credentials are hardcoded in build.gradle. This is a security risk and should be moved to environment variables or local.properties for production.**
-
 ## Security Considerations
 
-1. **Hardcoded Credentials**: Signing keystore passwords are visible in build.gradle
+1. **Signing Configuration**: Ensure signing credentials are properly secured (use environment variables or local.properties, avoid committing to version control)
 2. **WebView Security**: 
    - `setAllowUniversalAccessFromFileURLs(true)` is enabled
    - JavaScript is enabled
