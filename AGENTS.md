@@ -188,7 +188,8 @@ The WebView exposes these native methods to JavaScript:
 ## Deployment Process
 
 ### Release Build Configuration
-- **Signing**: Configured in `app/build.gradle` (local signing config)
+- **Signing**: Configured in `local.properties` (not tracked by git)
+  - Properties: `RELEASE_STORE_FILE`, `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_PASSWORD`, `RELEASE_KEY_ALIAS`
 - **ProGuard**: Disabled (`minifyEnabled false`)
 - **Version**: Defined in `app/build.gradle`
   - `versionCode`: 1
@@ -269,3 +270,19 @@ Key native methods used:
    - Updated `polevpn.start()` call to match new native library signature (added 2 String parameters)
 
 **Build Status**: ✅ Debug build successful
+
+### 2024-03-13: Signing Configuration Security Fix
+
+**Problem**: Signing credentials hardcoded in `app/build.gradle`
+
+**Solution**: Moved signing configuration to `local.properties` (which is in `.gitignore`)
+
+**Changes Made**:
+1. **app/build.gradle**: Modified to read signing config from `local.properties` dynamically
+2. **local.properties**: Added signing properties (not tracked by git)
+   - `RELEASE_STORE_FILE`
+   - `RELEASE_STORE_PASSWORD`
+   - `RELEASE_KEY_PASSWORD`
+   - `RELEASE_KEY_ALIAS`
+
+**Security Benefit**: Sensitive credentials no longer exposed in version control
