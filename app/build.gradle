@@ -3,6 +3,7 @@ plugins {
 }
 
 android {
+    namespace 'com.polevpn.application'
     signingConfigs {
         release {
         storeFile file('/Users/starjiang/android.keystore')
@@ -11,13 +12,13 @@ android {
             keyAlias 'android.keystore'
         }
     }
-    compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    compileSdkVersion 34
+    buildToolsVersion "34.0.0"
 
     defaultConfig {
         applicationId "com.polevpn.application"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
 
@@ -39,9 +40,14 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 repositories {
+    google()
+    mavenCentral()
     flatDir{
         dirs 'libs'
     }

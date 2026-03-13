@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setAllowContentAccess(true);
         webSettings.setDatabaseEnabled(true);
         webSettings.setDomStorageEnabled(true);
-        webSettings.setAppCacheEnabled(true);
+        // setAppCacheEnabled removed in API 33
         webSettings.setSaveFormData(false);
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         webSettings.setJavaScriptEnabled(true);
@@ -422,7 +422,7 @@ public class MainActivity extends AppCompatActivity {
 
             PoleVPNManager.getInstance().setAccessServer(accessServer);
 
-            polevpn.start(accessServer.endpoint,accessServer.user,accessServer.password,accessServer.sni,accessServer.skipSSLVerify);
+            polevpn.start(accessServer.endpoint,accessServer.user,accessServer.password,accessServer.sni,accessServer.skipSSLVerify,"","");
 
         }catch (Exception e){
             Polevpnmobile.log("error",e.getMessage());
