@@ -1,0 +1,26 @@
+## This is a template file for local.properties
+## Copy this file to local.properties and fill in your own values
+## DO NOT commit local.properties to version control!
+
+# Location of the Android SDK
+# Example for macOS:
+sdk.dir=/Users/YOUR_USERNAME/Library/Android/sdk
+# Example for Windows:
+# sdk.dir=C:\\Users\\YOUR_USERNAME\\AppData\\Local\\Android\\Sdk
+# Example for Linux:
+# sdk.dir=/home/YOUR_USERNAME/Android/Sdk
+
+# =============================================================================
+# Release Signing Configuration (Required for release builds)
+# =============================================================================
+# Path to your keystore file
+RELEASE_STORE_FILE=/path/to/your/android.keystore
+
+# Keystore password
+RELEASE_STORE_PASSWORD=your_keystore_password
+
+# Key password (usually same as keystore password)
+RELEASE_KEY_PASSWORD=your_key_password
+
+# Key alias
+RELEASE_KEY_ALIAS=your_key_alias

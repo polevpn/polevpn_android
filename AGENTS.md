@@ -150,6 +150,22 @@ The WebView exposes these native methods to JavaScript:
 ./gradlew connectedAndroidTest  # Run instrumented tests (requires device)
 ```
 
+### First Time Setup
+
+1. **Copy the template file**:
+   ```bash
+   cp local.properties.example local.properties
+   ```
+
+2. **Edit `local.properties`** and fill in your own values:
+   - `sdk.dir`: Path to your Android SDK
+   - `RELEASE_STORE_FILE`: Path to your release keystore (for release builds)
+   - `RELEASE_STORE_PASSWORD`: Keystore password
+   - `RELEASE_KEY_PASSWORD`: Key password
+   - `RELEASE_KEY_ALIAS`: Key alias
+
+3. **Note**: `local.properties` is in `.gitignore` and should NOT be committed to version control.
+
 ## Development Conventions
 
 ### Code Style
